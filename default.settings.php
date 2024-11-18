@@ -9,6 +9,11 @@ $settings['database'] = [
     'port' => 3306,
 ];
 
+// Server settings.
+$settings['server'] = [
+    'temp_dir' => '/tmp',
+];
+
 // Bluesky settings.
 $settings['bluesky'] = [
     'app_password' => 'aaaa-bbbb-cccc-dddd',

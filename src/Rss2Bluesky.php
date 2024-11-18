@@ -30,6 +30,8 @@ class Rss2Bluesky {
 
     private $db;
 
+    private $tempDirectory;
+
     public function __construct($settings) {
         $this->settings = $settings;
         $this->blueskyApi = new BlueskyApi();
@@ -44,6 +46,9 @@ class Rss2Bluesky {
             $this->getBlueskyRefreshToken();
             if ($this->db->connect_errno > 0) {
                 die('Unable to connect to database [' . $this->db->connect_error . ']');
+            }
+            if (!$this->tempDirectory = ($settings['server']['temp_dir'] ?? '')) {
+                $this->tempDirectory = sys_get_temp_dir();
             }
         } catch (\Exception $e) {
             // TODO: Handle the exception however you want
@@ -236,8 +241,7 @@ class Rss2Bluesky {
     }
 
     public function getSizedImage($url) {
-        $target_dir = '/tmp/';
-        $filename = tempnam($target_dir, 'bskyimage') . 'jpg';
+        $filename = $this->tempDirectory . '/bskyimage.' . uniqid(rand()) . '.jpg';
         if (!$image = file_get_contents($url)) {
             return FALSE;
         }
