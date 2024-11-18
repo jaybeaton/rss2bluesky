@@ -253,7 +253,7 @@ class Rss2Bluesky {
     }
 
     public function getContentFromUrl(&$post) {
-        if (!$content = file_get_contents($post['permalink'])) {
+        if (!$content = $this->getRemoteContent($post['permalink'])) {
             return FALSE;
         }
         if (preg_match_all('~<meta(.*?)>~', $content, $matches)) {
@@ -272,17 +272,23 @@ class Rss2Bluesky {
         }
     }
 
-    public function getProfile($actor = NULL) {
-        if (!$this->blueskyIsAuthed) {
-            $this->getBlueskyAuth();
+    public function getRemoteContent($url) {
+        try {
+            $ua = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+            //  curl_setopt($ch, CURLOPT_SSLVERSION,3);
+            curl_setopt($ch, CURLOPT_USERAGENT, $ua);
+            $remote_data = curl_exec($ch);
+            curl_close($ch);
         }
-        if (!$actor) {
-            $actor = $this->blueskyUsername;
+        catch (\Exception $exception) {
+            // Do nothing.
+            $remote_data = '';
         }
-        $args = [
-            'actor' => $actor,
-        ];
-        return $this->blueskyApi->request('GET', 'app.bsky.actor.getProfile', $args);
+        return $remote_data;
     }
 
 }
