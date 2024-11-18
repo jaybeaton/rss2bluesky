@@ -59,9 +59,6 @@ class Rss2Bluesky {
             }
             else {
                 $used_refresh_token = FALSE;
-
-                print "bsky login\n";
-
                 $this->blueskyApi->auth($this->settings['bluesky']['username'], $this->settings['bluesky']['app_password']);
             }
             $this->blueskyIsAuthed = TRUE;
@@ -195,6 +192,9 @@ class Rss2Bluesky {
             $this->getBlueskyAuth();
         }
 
+        // Get the content from meta tags.
+        $this->getContentFromUrl($post);
+
         $args = [
             'collection' => 'app.bsky.feed.post',
             'repo' => $this->blueskyApi->getAccountDid(),
@@ -214,16 +214,9 @@ class Rss2Bluesky {
             ],
         ];
 
-
-        print '==== $post =====' . "\n" . print_r($post, TRUE) . "\n============\n";
-
         if ($post['image_url'] && $image = $this->getSizedImage($post['image_url'])) {
-
             $content_type = 'image/jpeg';
             $image_upload = $this->blueskyApi->request('POST', 'com.atproto.repo.uploadBlob', [], $image, $content_type);
-
-            print '==== $image_upload =====' . "\n" . print_r($image_upload, TRUE) . "\n============\n";
-
             if (!empty($image_upload->blob->ref->{'$link'})) {
                 $args['record']['embed']['external']['thumb'] = [
                     '$type' => 'blob',
@@ -237,29 +230,18 @@ class Rss2Bluesky {
 
         }
 
-        print "==== args =====\n" . print_r($args, TRUE) . "\n============\n";
-
         $data = $this->blueskyApi->request('POST', 'com.atproto.repo.createRecord', $args);
-
-        print "==== response =====\n" . print_r($data, TRUE) . "\n============\n";
-
         return !empty($data->uri);
 
     }
 
     public function getSizedImage($url) {
         $target_dir = '/tmp/';
-        $target_dir = './';
         $filename = tempnam($target_dir, 'bskyimage') . 'jpg';
-
-        print "filename[$filename]\n";
-
         if (!$image = file_get_contents($url)) {
-            print "error getting url";
             return FALSE;
         }
         if (!file_put_contents($filename, $image)) {
-            print "error saving file";
             return FALSE;
         }
         $this->simpleImage->load($filename);
@@ -268,6 +250,26 @@ class Rss2Bluesky {
             $this->simpleImage->save($filename);
         }
         return file_get_contents($filename);
+    }
+
+    public function getContentFromUrl(&$post) {
+        if (!$content = file_get_contents($post['permalink'])) {
+            return FALSE;
+        }
+        if (preg_match_all('~<meta(.*?)>~', $content, $matches)) {
+            foreach ($matches[1] as $match) {
+                if (str_contains($match, 'name="og:image"') || str_contains($match, 'name="twitter:image"')) {
+                    if (preg_match('~content="(.*?)"~', $match, $meta_match)) {
+                        $post['image_url'] = $meta_match[1];
+                    }
+                }
+                if (str_contains($match, 'name="description"') || str_contains($match, 'name="twitter:description"')) {
+                    if (preg_match('~content="(.*?)"~', $match, $meta_match)) {
+                        $post['blurb'] = $this->getBlurb(html_entity_decode($meta_match[1]));
+                    }
+                }
+            } // Loop thru meta tags.
+        }
     }
 
     public function getProfile($actor = NULL) {
