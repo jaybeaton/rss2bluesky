@@ -1,7 +1,7 @@
 CREATE TABLE `rss2bluesky_posts` (
   `feed` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
   `title` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
-  `permalink` varchar(500) COLLATE utf8mb4_bin DEFAULT NULL,
+  `permalink` varchar(500) COLLATE utf8mb4_bin DEFAULT '',
   `blurb` text COLLATE utf8mb4_bin DEFAULT NULL,
   `image_url` varchar(500) COLLATE utf8mb4_bin DEFAULT NULL,
   `is_posted` tinyint(3) unsigned NOT NULL DEFAULT '0',
