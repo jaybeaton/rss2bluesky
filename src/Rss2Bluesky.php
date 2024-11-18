@@ -249,7 +249,9 @@ class Rss2Bluesky {
             $this->simpleImage->resizeToWidth(self::IMAGE_MAX_DIM);
             $this->simpleImage->save($filename);
         }
-        return file_get_contents($filename);
+        $data = file_get_contents($filename);
+        unlink($filename);
+        return $data;
     }
 
     public function getContentFromUrl(&$post) {
