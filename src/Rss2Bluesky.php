@@ -193,8 +193,22 @@ class Rss2Bluesky {
 
     public function postToBluesky($post) {
 
+        static $post_index = 0;
+        static $last_timestamp = 0;
+
         // Make sure we're using UTC.
         date_default_timezone_set('UTC');
+        $now = time();
+        if ($last_timestamp != $now) {
+            $last_timestamp = $now;
+            $post_index = 0;
+        }
+        $post_index++;
+        // Need timestamp formatted like "2023-08-07T05:49:39.417839Z".
+        $created_at = date('Y-m-d\TH:i:s', $now)
+            . '.'
+            . str_pad('00000' . $post_index, 6, '0', STR_PAD_LEFT)
+            . 'Z';
 
         if (!$this->blueskyIsAuthed) {
             $this->getBlueskyAuth();
@@ -209,8 +223,7 @@ class Rss2Bluesky {
             'record' => [
                 'text' => 'From the "' . $post['feed'] . '" RSS feed',
                 'langs' => ['en'],
-//                'createdAt' => date('c'),
-                'createdAt' => date('Y-m-d\TH:i:s\.000\Z'),
+                'createdAt' => $created_at,
                 '$type' => 'app.bsky.feed.post',
                 'embed' => [
                     '$type' => 'app.bsky.embed.external',
