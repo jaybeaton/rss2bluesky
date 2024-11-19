@@ -193,6 +193,9 @@ class Rss2Bluesky {
 
     public function postToBluesky($post) {
 
+        // Make sure we're using UTC.
+        date_default_timezone_set('UTC');
+
         if (!$this->blueskyIsAuthed) {
             $this->getBlueskyAuth();
         }
@@ -206,7 +209,8 @@ class Rss2Bluesky {
             'record' => [
                 'text' => 'From the "' . $post['feed'] . '" RSS feed',
                 'langs' => ['en'],
-                'createdAt' => date('c'),
+//                'createdAt' => date('c'),
+                'createdAt' => date('Y-m-d\TH:i:s\.000\Z'),
                 '$type' => 'app.bsky.feed.post',
                 'embed' => [
                     '$type' => 'app.bsky.embed.external',
@@ -235,6 +239,7 @@ class Rss2Bluesky {
 
         }
 
+//        print "==== args =====\n" . print_r($args, TRUE) . "\n============\n";
         $data = $this->blueskyApi->request('POST', 'com.atproto.repo.createRecord', $args);
         return !empty($data->uri);
 
