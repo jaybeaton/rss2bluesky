@@ -204,10 +204,12 @@ class Rss2Bluesky {
             $post_index = 0;
         }
         $post_index++;
-        // Need timestamp formatted like "2023-08-07T05:49:39.417839Z".
+        // Need timestamp formatted like "2023-07-30T05:49:39.417Z".
+        // Note: Docs show 6 digits after the decimal, but most clients seem to
+        // use only 3. We should match that.
         $created_at = date('Y-m-d\TH:i:s', $now)
             . '.'
-            . str_pad('00000' . $post_index, 6, '0', STR_PAD_LEFT)
+            . str_pad('000' . $post_index, 3, '0', STR_PAD_LEFT)
             . 'Z';
 
         if (!$this->blueskyIsAuthed) {
