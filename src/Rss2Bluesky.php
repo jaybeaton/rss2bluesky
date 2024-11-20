@@ -209,7 +209,7 @@ class Rss2Bluesky {
         // use only 3. We should match that.
         $created_at = date('Y-m-d\TH:i:s', $now)
             . '.'
-            . str_pad('000' . $post_index, 3, '0', STR_PAD_LEFT)
+            . str_pad($post_index, 3, '0', STR_PAD_LEFT)
             . 'Z';
 
         if (!$this->blueskyIsAuthed) {
