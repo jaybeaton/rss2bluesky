@@ -223,7 +223,8 @@ class Rss2Bluesky {
             'collection' => 'app.bsky.feed.post',
             'repo' => $this->blueskyApi->getAccountDid(),
             'record' => [
-                'text' => 'From the "' . $post['feed'] . '" RSS feed',
+                'text' => $post['title'] . "\n" .
+                    'From the "' . $post['feed'] . '" RSS feed',
                 'langs' => ['en'],
                 'createdAt' => $created_at,
                 '$type' => 'app.bsky.feed.post',
