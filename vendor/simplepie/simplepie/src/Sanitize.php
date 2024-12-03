@@ -334,8 +334,9 @@ class Sanitize implements RegistryAware
      */
     public function https_url($url)
     {
+        $host = parse_url($url, PHP_URL_HOST) ?: '';
         return (strtolower(substr($url, 0, 7)) === 'http://') &&
-            $this->is_https_domain(parse_url($url, PHP_URL_HOST)) ?
+            $this->is_https_domain($host) ?
             substr_replace($url, 's', 4, 0) : //Add the 's' to HTTPS
             $url;
     }
