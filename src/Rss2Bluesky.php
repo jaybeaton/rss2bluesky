@@ -263,13 +263,16 @@ class Rss2Bluesky {
 
     public function getSizedImage($url) {
         $filename = $this->tempDirectory . '/bskyimage.' . uniqid(rand()) . '.jpg';
-        if (!$image = file_get_contents($url)) {
+        if (!$image = @file_get_contents($url)) {
             return FALSE;
         }
         if (!file_put_contents($filename, $image)) {
             return FALSE;
         }
         $this->simpleImage->load($filename);
+        if (!$this->simpleImage->image) {
+          return FALSE;
+        }
         if ($this->simpleImage->getWidth() > self::IMAGE_MAX_DIM) {
             $this->simpleImage->resizeToWidth(self::IMAGE_MAX_DIM);
             $this->simpleImage->save($filename);
